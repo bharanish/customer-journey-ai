@@ -51,10 +51,15 @@ if question:
         "http://localhost:8000/chat",
         json={
             "question": question,
-            "history": st.session_state.history
+            "history": st.session_state.history[-5:]
         }
     )
+    st.write("Status Code:", response.status_code)
 
+    if response.status_code != 200:
+        st.error(response.text)
+        st.stop()
+        
     data = response.json()
 
     # Save history

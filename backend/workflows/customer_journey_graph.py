@@ -25,21 +25,67 @@ class AgentState(TypedDict):
 
 def sql_node(state):
 
-    sql = generate_sql(state["question"])
+    sql = clean_sql(
+    generate_sql(state["question"])
+)
 
-    state["sql"] = clean_sql(sql)
+    if sql == "INVALID_COLUMN":
+
+        state["sql"] = "INVALID_COLUMN"
+
+        state["results"] = (
+            "Requested field does not exist."
+        )
+
+        state["results_json"] = []
+
+        state["insight"] = (
+            "The requested dimension is not available "
+            "in the dataset."
+        )
+
+        state["recommendations"] = (
+            "Try channel, campaign, device, "
+            "event_type, revenue, or event_date."
+        )
+
+        return state
+
+    state["sql"] = sql
     state["steps"].append("SQL Agent")
+
+    print("\nGenerated SQL:")
+    print(state["sql"])
+    print()
 
     return state
 
 def query_node(state):
 
-    df = execute_query(state["sql"])
+    try:
 
-    state["results"] = df.to_string()
+        df = execute_query(state["sql"])
 
-    state["results_json"] = df.to_dict(orient="records")
-    state["steps"].append("Query Executor")
+        if len(df) > 20:
+            sample_df = df.head(20)
+        else:
+            sample_df = df
+
+        state["results"] = sample_df.to_string()
+        state["results_json"] = df.to_dict(orient="records")
+
+        state["steps"].append("Query Executor")
+
+    except Exception as e:
+
+        state["results"] = str(e)
+        state["results_json"] = []
+
+        state["insight"] = "Query execution failed."
+
+        state["recommendations"] = (
+            "Try rephrasing the question."
+        )
 
     return state
 
