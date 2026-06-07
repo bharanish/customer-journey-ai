@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from typing import List
 from agents.sql_agent import generate_sql, clean_sql
 from agents.query_executor import execute_query
 from agents.insight_agent import generate_insight
@@ -12,6 +13,7 @@ app = FastAPI()
 
 class ChatRequest(BaseModel):
     question: str
+    history: List[str] = []
 
 @app.get("/")
 def root():
@@ -39,6 +41,7 @@ def chat(request: ChatRequest):
 
     result = graph.invoke({
         "question": request.question,
+        "history": request.history,
         "steps": []
     })
 
