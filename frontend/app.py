@@ -196,10 +196,24 @@ if st.session_state.last_result:
                 st.write(f"{idx}. {q}")
 
         # -----------------------------
+        # RAG Response
+        # -----------------------------
+
+        if data.get("type") == "rag":
+
+            st.info("Answer retrieved from Business Glossary")
+
+            st.subheader(
+                "📚 Business Knowledge Base"
+            )
+
+            st.write(data["answer"])
+
+        # -----------------------------
         # General Chat Response
         # -----------------------------
 
-        if data.get("type") == "general":
+        elif data.get("type") == "general":
 
             st.subheader("AI Assistant")
 
