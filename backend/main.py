@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from typing import List
+from typing import List, Dict, Any
 from agents.sql_agent import generate_sql, clean_sql
 from agents.query_executor import execute_query
 from agents.insight_agent import generate_insight
@@ -13,7 +13,7 @@ app = FastAPI()
 
 class ChatRequest(BaseModel):
     question: str
-    history: List[str] = []
+    history: List[Dict[str, Any]] = []
 
 @app.get("/")
 def root():

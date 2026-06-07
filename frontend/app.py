@@ -27,6 +27,9 @@ if "last_result" not in st.session_state:
 # ---------------------------------
 # Sidebar
 # ---------------------------------
+if st.sidebar.button("Clear History"):
+    st.session_state.clear()
+    st.rerun()
 
 with st.sidebar:
 
@@ -34,8 +37,13 @@ with st.sidebar:
 
     if st.session_state.history:
 
-        for q in reversed(st.session_state.history):
-            st.write(f"• {q}")
+        for item in reversed(st.session_state.history):
+
+            if isinstance(item, dict):
+                st.write(f"• {item['question']}")
+
+            else:
+                st.write(f"• {item}")
 
     else:
         st.write("No questions asked yet")
@@ -73,7 +81,10 @@ if question:
             data = response.json()
 
             # Save history
-            st.session_state.history.append(question)
+            st.session_state.history.append({
+                "question": question,
+                "result": data.get("results_json", [])[:5]
+            })
 
             # Save latest response
             st.session_state.last_result = data
