@@ -25,4 +25,11 @@ def chat(request: ChatRequest):
         "steps": []
     })
     
-    return result
+    return {
+    "question": result["question"],
+    "sql": result["sql"],
+    "results": result["results_json"],
+    "insight": result["insight"],
+    "recommendations": result["recommendations"],
+    "steps": result["steps"]
+}

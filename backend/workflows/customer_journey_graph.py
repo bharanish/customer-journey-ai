@@ -18,6 +18,7 @@ class AgentState(TypedDict):
     question: str
     sql: str
     results: str
+    results_json: list
     insight: str
     recommendations: str
     steps: list
