@@ -2,6 +2,56 @@ import streamlit as st
 import requests
 import plotly.express as px
 import pandas as pd
+from io import BytesIO
+
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer
+)
+
+from reportlab.lib.styles import getSampleStyleSheet
+
+def generate_pdf(data):
+
+    pdf_path = "report.pdf"
+
+    doc = SimpleDocTemplate(pdf_path)
+
+    styles = getSampleStyleSheet()
+
+    content = [
+
+        Paragraph(
+            "Customer Journey AI Report",
+            styles["Title"]
+        ),
+
+        Spacer(1, 12),
+
+        Paragraph(
+            f"<b>Question:</b> {data['question']}",
+            styles["BodyText"]
+        ),
+
+        Spacer(1, 12),
+
+        Paragraph(
+            f"<b>Insight:</b><br/>{data['insight']}",
+            styles["BodyText"]
+        ),
+
+        Spacer(1, 12),
+
+        Paragraph(
+            f"<b>Recommendations:</b><br/>{data['recommendations']}",
+            styles["BodyText"]
+        )
+    ]
+
+    doc.build(content)
+
+    return pdf_path
 
 # ---------------------------------
 # Page Title
@@ -226,6 +276,55 @@ if st.session_state.last_result:
                     df,
                     use_container_width=True
                 )
+                
+                col1, col2, col3 = st.columns(3)
+
+                # CSV Download
+                with col1:
+                    csv = df.to_csv(index=False).encode("utf-8")
+                    st.download_button(
+                        "📄 CSV",
+                        csv,
+                        file_name="analysis_results.csv",
+                        mime="text/csv"
+                    )
+
+                # Excel Download
+
+                with col2:
+
+                    excel_buffer = BytesIO()
+                
+                    with pd.ExcelWriter(
+                        excel_buffer,
+                        engine="openpyxl"
+                    ) as writer:
+
+                        df.to_excel(
+                            writer,
+                            index=False,
+                            sheet_name="Results"
+                        )
+
+                    st.download_button(
+                        "📊 Excel",
+                        excel_buffer.getvalue(),
+                        file_name="analysis_results.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    )
+                
+                with col3:
+
+                    pdf_file = generate_pdf(data)
+
+                    with open(pdf_file, "rb") as f:
+
+                        st.download_button(
+                            "📑 PDF Report",
+                            data=f,
+                            file_name="business_report.pdf",
+                            mime="application/pdf"
+                        )
 
                 # Chart
 
