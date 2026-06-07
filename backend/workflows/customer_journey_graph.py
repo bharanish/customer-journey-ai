@@ -25,42 +25,46 @@ class AgentState(TypedDict):
 
 def sql_node(state):
 
-    sql = clean_sql(
-    generate_sql(state["question"])
-)
+    sql = generate_sql(state["question"])
 
-    if sql == "INVALID_COLUMN":
+    sql = clean_sql(sql)
 
-        state["sql"] = "INVALID_COLUMN"
+    if sql.strip().endswith("INVALID_COLUMN"):
 
-        state["results"] = (
-            "Requested field does not exist."
-        )
+        state["sql"] = sql
+
+        state["results"] = []
 
         state["results_json"] = []
 
         state["insight"] = (
-            "The requested dimension is not available "
-            "in the dataset."
+            "Customer segment information is not available "
+            "in the current dataset."
         )
 
-        state["recommendations"] = (
-            "Try channel, campaign, device, "
-            "event_type, revenue, or event_date."
-        )
+        state["recommendations"] = """
+        Try one of these questions:
+
+        • Show revenue by channel
+        • Show revenue by campaign
+        • Show revenue by device
+        • Which channel generated highest revenue?
+        • What is total revenue?
+        """
+
+        state["steps"].append("SQL Agent")
 
         return state
 
     state["sql"] = sql
     state["steps"].append("SQL Agent")
 
-    print("\nGenerated SQL:")
-    print(state["sql"])
-    print()
-
     return state
 
 def query_node(state):
+
+    if state.get("sql") == "INVALID_COLUMN":
+        return state
 
     try:
 
@@ -91,6 +95,9 @@ def query_node(state):
 
 def insight_node(state):
 
+    if state.get("sql") == "INVALID_COLUMN":
+        return state
+
     insight = generate_insight(
         state["question"],
         state["results"]
@@ -103,6 +110,9 @@ def insight_node(state):
 
 def recommendation_node(state):
 
+    if state.get("sql") == "INVALID_COLUMN":
+        return state
+
     recommendations = generate_recommendation(
         state["insight"]
     )
@@ -111,6 +121,13 @@ def recommendation_node(state):
     state["steps"].append("Recommendation Agent")
 
     return state
+
+def route_after_sql(state):
+
+    if state["sql"] == "INVALID_COLUMN":
+        return END
+
+    return "query_executor"
 
 builder = StateGraph(AgentState)
 
@@ -121,7 +138,14 @@ builder.add_node("recommendation_agent", recommendation_node)
 
 builder.set_entry_point("sql_agent")
 
-builder.add_edge("sql_agent", "query_executor")
+builder.add_conditional_edges(
+    "sql_agent",
+    route_after_sql,
+    {
+        "query_executor": "query_executor",
+        END: END
+    }
+)
 builder.add_edge("query_executor", "insight_agent")
 builder.add_edge("insight_agent", "recommendation_agent")
 builder.add_edge("recommendation_agent", END)
@@ -131,7 +155,13 @@ graph = builder.compile()
 if __name__ == "__main__":
 
     result = graph.invoke({
-        "question": "Which channel generated highest revenue?"
+        "question": "Show revenue by customer segment",
+        "sql": "",
+        "results": "",
+        "results_json": [],
+        "insight": "",
+        "recommendations": "",
+        "steps": []
     })
 
     print(result)

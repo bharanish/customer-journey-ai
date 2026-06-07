@@ -5,6 +5,8 @@ from agents.query_executor import execute_query
 from agents.insight_agent import generate_insight
 from agents.recommendation_agent import generate_recommendation
 from workflows.customer_journey_graph import graph
+from agents.router_agent import classify_question
+from agents.chat_agent import general_chat
 
 app = FastAPI()
 
@@ -20,16 +22,26 @@ def root():
 @app.post("/chat")
 def chat(request: ChatRequest):
 
+    question_type = classify_question(
+        request.question
+    )
+
+    if question_type == "GENERAL_QUESTION":
+
+        answer = general_chat(
+            request.question
+        )
+
+        return {
+            "type": "general",
+            "answer": answer
+        }
+
     result = graph.invoke({
         "question": request.question,
         "steps": []
     })
-    
-    return {
-    "question": result["question"],
-    "sql": result["sql"],
-    "results": result["results_json"],
-    "insight": result["insight"],
-    "recommendations": result["recommendations"],
-    "steps": result["steps"]
-}
+
+    result["type"] = "analytics"
+
+    return result

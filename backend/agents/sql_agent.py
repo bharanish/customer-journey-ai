@@ -30,10 +30,15 @@ def generate_sql(question):
     Rules:
     1. Use ONLY the columns listed above.
     2. Never invent columns.
-    3. If the user asks for a field that does not exist,
-    return EXACTLY:
+    3. If the question requires a column that does not exist,
+    respond with exactly this single token:
 
     INVALID_COLUMN
+
+    Do not add explanations.
+    Do not add comments.
+    Do not add SQL.
+    Do not add markdown.
 
     Question:
     {question}
@@ -47,12 +52,18 @@ def generate_sql(question):
 
 
 def clean_sql(sql_text):
-    return (
+
+    cleaned = (
         sql_text
         .replace("```sql", "")
         .replace("```", "")
         .strip()
     )
+
+    if "INVALID_COLUMN" in cleaned:
+        return "INVALID_COLUMN"
+
+    return cleaned
 
 # print(
 #     generate_sql(
