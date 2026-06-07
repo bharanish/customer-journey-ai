@@ -12,6 +12,7 @@ from agents.sql_agent import generate_sql, clean_sql
 from agents.query_executor import execute_query
 from agents.insight_agent import generate_insight
 from agents.recommendation_agent import generate_recommendation
+from agents.visualization_agent import generate_visualization
 from langgraph.graph import StateGraph, END
 
 class AgentState(TypedDict):
@@ -22,6 +23,7 @@ class AgentState(TypedDict):
     results: str
     results_json: list
 
+    visualization: dict
     insight: str
     recommendations: str
     
@@ -126,6 +128,28 @@ def recommendation_node(state):
 
     return state
 
+def visualization_node(state):
+
+    if not state["results_json"]:
+        return state
+
+    columns = list(
+        state["results_json"][0].keys()
+    )
+
+    viz = generate_visualization(
+        state["question"],
+        columns
+    )
+
+    state["visualization"] = viz
+
+    state["steps"].append(
+        "Visualization Agent"
+    )
+
+    return state
+
 def route_after_sql(state):
 
     if state["sql"] == "INVALID_COLUMN":
@@ -139,6 +163,7 @@ builder.add_node("sql_agent", sql_node)
 builder.add_node("query_executor", query_node)
 builder.add_node("insight_agent", insight_node)
 builder.add_node("recommendation_agent", recommendation_node)
+builder.add_node("visualization_agent", visualization_node)
 
 builder.set_entry_point("sql_agent")
 
@@ -150,7 +175,8 @@ builder.add_conditional_edges(
         END: END
     }
 )
-builder.add_edge("query_executor", "insight_agent")
+builder.add_edge("query_executor","visualization_agent")
+builder.add_edge("visualization_agent", "insight_agent")
 builder.add_edge("insight_agent", "recommendation_agent")
 builder.add_edge("recommendation_agent", END)
 
@@ -159,7 +185,7 @@ graph = builder.compile()
 if __name__ == "__main__":
 
     result = graph.invoke({
-        "question": "Show revenue by customer segment",
+        "question": "Show revenue by channel",
         "sql": "",
         "results": "",
         "results_json": [],

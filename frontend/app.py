@@ -232,18 +232,58 @@ if st.session_state.last_result:
                 if len(df.columns) >= 2:
 
                     try:
+                        viz = data.get("visualization")
 
-                        fig = px.bar(
-                            df,
-                            x=df.columns[0],
-                            y=df.columns[1],
-                            title=f"{df.columns[1]} by {df.columns[0]}"
-                        )
+                        if viz and results:
 
-                        st.plotly_chart(
-                            fig,
-                            use_container_width=True
-                        )
+                            chart_type = viz.get("chart_type")
+                            x_col = viz.get("x")
+                            y_col = viz.get("y")
+
+                            try:
+
+                                if chart_type == "line":
+
+                                    fig = px.line(
+                                        df,
+                                        x=x_col,
+                                        y=y_col
+                                    )
+
+                                elif chart_type == "pie":
+
+                                    fig = px.pie(
+                                        df,
+                                        names=x_col,
+                                        values=y_col
+                                    )
+
+                                elif chart_type == "scatter":
+
+                                    fig = px.scatter(
+                                        df,
+                                        x=x_col,
+                                        y=y_col
+                                    )
+                                
+                                else:
+
+                                    fig = px.bar(
+                                        df,
+                                        x=x_col,
+                                        y=y_col
+                                    )
+
+                                st.plotly_chart(
+                                    fig,
+                                    use_container_width=True
+                                )
+
+                            except Exception as e:
+
+                                st.warning(
+                                    f"Could not generate chart: {e}"
+                                )
 
                     except Exception:
                         pass
