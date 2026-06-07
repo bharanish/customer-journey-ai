@@ -12,16 +12,19 @@ llm = ChatOpenAI(
 
 def generate_sql(question, history):
 
-    history_text = "\n".join(history[-5:])
+    history_context = ""
+
+    for item in history:
+        history_context += f"""
+    Question:
+    {item.get('question')}
+
+    Result:
+    {item.get('result')}
+    """
 
     prompt = f"""
     You are a PostgreSQL expert.
-
-    Conversation History:
-    {history_text}
-
-    Current Question:
-    {question}
 
     Table:
     customer_journey
@@ -34,6 +37,14 @@ def generate_sql(question, history):
     - device
     - event_type
     - revenue
+
+    Previous conversation and results:
+
+    {history_context}
+
+    Current question:
+
+    {question}
 
     Rules:
     1. Use ONLY the columns listed above.
