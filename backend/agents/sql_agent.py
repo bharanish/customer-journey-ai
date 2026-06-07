@@ -15,22 +15,25 @@ def generate_sql(question):
     prompt = f"""
     You are a PostgreSQL expert.
 
-    Generate SQL that returns the data needed
-    to answer the question completely.
-
-    Always include calculated metrics.
-
     Table:
     customer_journey
 
-    Columns:
-    customer_id
-    event_date
-    channel
-    campaign
-    device
-    event_type
-    revenue
+    Available Columns:
+    - customer_id
+    - event_date
+    - channel
+    - campaign
+    - device
+    - event_type
+    - revenue
+
+    Rules:
+    1. Use ONLY the columns listed above.
+    2. Never invent columns.
+    3. If the user asks for a field that does not exist,
+    return EXACTLY:
+
+    INVALID_COLUMN
 
     Question:
     {question}
