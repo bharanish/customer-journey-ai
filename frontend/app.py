@@ -3,88 +3,109 @@ import requests
 import plotly.express as px
 import pandas as pd
 
+# ---------------------------------
+# Page Title
+# ---------------------------------
+
 st.title("Customer Journey AI Analyst")
 
-# Memory
-if "messages" not in st.session_state:
-    st.session_state.messages = []
+# ---------------------------------
+# Session State
+# ---------------------------------
 
-# Display previous messages
-for message in st.session_state.messages:
+if "history" not in st.session_state:
+    st.session_state.history = []
 
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+if "last_result" not in st.session_state:
+    st.session_state.last_result = None
 
-# Chat input
+# ---------------------------------
+# Sidebar
+# ---------------------------------
+
+with st.sidebar:
+
+    st.header("Question History")
+
+    if st.session_state.history:
+
+        for q in reversed(st.session_state.history):
+            st.write(f"• {q}")
+
+    else:
+        st.write("No questions asked yet")
+
+# ---------------------------------
+# User Input
+# ---------------------------------
+
 question = st.chat_input("Ask a business question...")
+
+# ---------------------------------
+# API Call
+# ---------------------------------
 
 if question:
 
-    # Show user message
-    st.session_state.messages.append(
-        {
-            "role": "user",
-            "content": question
-        }
-    )
-
-    with st.chat_message("user"):
-        st.markdown(question)
-
-    # API call
     response = requests.post(
         "http://localhost:8000/chat",
-        json={"question": question}
+        json={
+            "question": question,
+            "history": st.session_state.history
+        }
     )
 
     data = response.json()
 
-    # Build assistant response
-    assistant_text = f"""
-### Insight
+    # Save history
+    st.session_state.history.append(question)
 
-{data['insight']}
+    # Save latest result
+    st.session_state.last_result = data
 
-### Recommendations
+# ---------------------------------
+# Display Latest Result
+# ---------------------------------
 
-{data['recommendations']}
-"""
+if st.session_state.last_result:
 
-    # Display assistant response
-    with st.chat_message("assistant"):
+    data = st.session_state.last_result
+    
+    with st.expander("Conversation Context"):
+        for idx, q in enumerate(st.session_state.history,start=1):
+            st.write(f"{idx}. {q}")
 
-        st.markdown(assistant_text)
+    st.subheader("Generated SQL")
+    st.code(data["sql"])
 
-        st.subheader("Generated SQL")
-        st.code(data["sql"])
+    st.subheader("Insights")
+    st.write(data["insight"])
 
-        results = data.get("results", [])
+    st.subheader("Recommendations")
+    st.write(data["recommendations"])
 
-        if results:
+    st.subheader("Agent Workflow")
+    st.write(" → ".join(data["steps"]))
 
-            df = pd.DataFrame(results)
+    results = data.get("results", [])
 
-            st.subheader("Results")
-            st.dataframe(df)
+    if results:
 
-            if len(df.columns) >= 2:
+        df = pd.DataFrame(results)
 
-                fig = px.bar(
-                    df,
-                    x=df.columns[0],
-                    y=df.columns[1],
-                    title=f"{df.columns[1]} by {df.columns[0]}"
-                )
+        st.subheader("Results")
+        st.dataframe(df, use_container_width=True)
 
-                st.plotly_chart(
-                    fig,
-                    use_container_width=True
-                )
+        if len(df.columns) >= 2:
 
-    # Save assistant response
-    st.session_state.messages.append(
-        {
-            "role": "assistant",
-            "content": assistant_text
-        }
-    )
+            fig = px.bar(
+                df,
+                x=df.columns[0],
+                y=df.columns[1],
+                title=f"{df.columns[1]} by {df.columns[0]}"
+            )
+
+            st.plotly_chart(
+                fig,
+                use_container_width=True
+            )
