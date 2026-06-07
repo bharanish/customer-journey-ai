@@ -16,16 +16,20 @@ from langgraph.graph import StateGraph, END
 
 class AgentState(TypedDict):
     question: str
+    history: list
+
     sql: str
     results: str
     results_json: list
+
     insight: str
     recommendations: str
+    
     steps: list
 
 def sql_node(state):
 
-    sql = generate_sql(state["question"])
+    sql = generate_sql(state["question"], state.get("history", []))
 
     sql = clean_sql(sql)
 

@@ -10,10 +10,18 @@ llm = ChatOpenAI(
     openai_api_key=OPENAI_API_KEY
 )
 
-def generate_sql(question):
+def generate_sql(question, history):
+
+    history_text = "\n".join(history[-5:])
 
     prompt = f"""
     You are a PostgreSQL expert.
+
+    Conversation History:
+    {history_text}
+
+    Current Question:
+    {question}
 
     Table:
     customer_journey
