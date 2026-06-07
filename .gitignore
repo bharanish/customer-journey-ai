@@ -1,0 +1,36 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+venv/
+env/
+
+# Environment Variables
+.env
+
+# Mac
+.DS_Store
+
+# Streamlit
+.streamlit/
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# Database
+*.db
+
+# Build
+dist/
+build/
+
