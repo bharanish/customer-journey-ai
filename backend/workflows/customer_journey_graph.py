@@ -13,6 +13,7 @@ from agents.query_executor import execute_query
 from agents.insight_agent import generate_insight
 from agents.recommendation_agent import generate_recommendation
 from agents.visualization_agent import generate_visualization
+from agents.sql_guard_agent import validate_sql
 from langgraph.graph import StateGraph, END
 
 class AgentState(TypedDict):
@@ -20,6 +21,8 @@ class AgentState(TypedDict):
     history: list
 
     sql: str
+    safe_sql: bool
+
     results: str
     results_json: list
 
@@ -66,6 +69,45 @@ def sql_node(state):
     state["steps"].append("SQL Agent")
 
     return state
+
+def sql_guard_node(state):
+
+    is_safe = validate_sql(
+        state["sql"]
+    )
+
+    state["safe_sql"] = is_safe
+
+    state["steps"].append(
+        "SQL Guard Agent"
+    )
+
+    if not is_safe:
+
+        state["results"] = []
+
+        state["results_json"] = []
+
+        state["insight"] = (
+            "Unsafe SQL query detected."
+        )
+
+        state["recommendations"] = (
+            "Only read-only SELECT queries "
+            "are allowed."
+        )
+
+    return state
+
+def route_after_guard(state):
+
+    if "INVALID_COLUMN" in state["sql"]:
+        return END
+
+    if not state["safe_sql"]:
+        return END
+
+    return "query_executor"
 
 def query_node(state):
 
@@ -150,16 +192,17 @@ def visualization_node(state):
 
     return state
 
-def route_after_sql(state):
+# def route_after_sql(state):
 
-    if state["sql"] == "INVALID_COLUMN":
-        return END
+#     if state["sql"] == "INVALID_COLUMN":
+#         return END
 
-    return "query_executor"
+#     return "query_executor"
 
 builder = StateGraph(AgentState)
 
 builder.add_node("sql_agent", sql_node)
+builder.add_node("sql_guard_agent", sql_guard_node)
 builder.add_node("query_executor", query_node)
 builder.add_node("insight_agent", insight_node)
 builder.add_node("recommendation_agent", recommendation_node)
@@ -167,9 +210,14 @@ builder.add_node("visualization_agent", visualization_node)
 
 builder.set_entry_point("sql_agent")
 
-builder.add_conditional_edges(
+builder.add_edge(
     "sql_agent",
-    route_after_sql,
+    "sql_guard_agent"
+)
+
+builder.add_conditional_edges(
+    "sql_guard_agent",
+    route_after_guard,
     {
         "query_executor": "query_executor",
         END: END
@@ -186,9 +234,12 @@ if __name__ == "__main__":
 
     result = graph.invoke({
         "question": "Show revenue by channel",
+        "history": [],
         "sql": "",
+        "safe_sql": True,
         "results": "",
         "results_json": [],
+        "visualization": {},
         "insight": "",
         "recommendations": "",
         "steps": []
