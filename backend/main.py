@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, Header, HTTPException
+from httpcore import request
 from pydantic import BaseModel
 from typing import List, Dict, Any
 
@@ -7,6 +8,12 @@ from workflows.customer_journey_graph import graph
 
 from agents.router_agent import classify_question
 from agents.chat_agent import general_chat
+
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from fastapi import Request
 
 from agents.rag_router import (
     is_business_definition
@@ -17,6 +24,14 @@ from agents.rag_agent import (
 )
 
 app = FastAPI()
+limiter = Limiter(
+    key_func=get_remote_address
+)
+
+app.state.limiter = limiter
+app.add_middleware(
+    SlowAPIMiddleware
+)
 API_KEY = os.getenv("API_KEY")
 
 class ChatRequest(BaseModel):
@@ -30,11 +45,22 @@ def root():
         "message": "Customer Journey AI Analyst"
     }
 
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy"
+    }
 
 @app.post("/chat")
-def chat(request: ChatRequest, x_api_key: str = Header(None)):
+@limiter.limit("20/minute")
+def chat(
+    request: Request,
+    payload: ChatRequest,
+    x_api_key: str = Header(None)
+):
+
     if x_api_key != API_KEY:
-    	raise HTTPException(
+        raise HTTPException(
         	status_code=401,
        		detail="Unauthorized"
     	)
@@ -43,12 +69,10 @@ def chat(request: ChatRequest, x_api_key: str = Header(None)):
     # RAG Business Dictionary
     # --------------------------------
 
-    if is_business_definition(
-        request.question
-    ) == "YES":
+    if is_business_definition(payload.question) == "YES":
 
         answer = answer_business_question(
-            request.question
+            payload.question
         )
 
         return {
@@ -61,7 +85,7 @@ def chat(request: ChatRequest, x_api_key: str = Header(None)):
     # --------------------------------
 
     question_type = classify_question(
-        request.question
+        payload.question
     )
 
     print(
@@ -76,8 +100,8 @@ def chat(request: ChatRequest, x_api_key: str = Header(None)):
 
         result = graph.invoke({
 
-            "question": request.question,
-            "history": request.history,
+            "question": payload.question,
+            "history": payload.history,
 
             "question_status": "",
 
@@ -104,7 +128,7 @@ def chat(request: ChatRequest, x_api_key: str = Header(None)):
     # --------------------------------
 
     answer = general_chat(
-        request.question
+        payload.question
     )
 
     return {
