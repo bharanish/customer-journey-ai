@@ -15,6 +15,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi import Request
 from middleware.logging import LoggingMiddleware
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from agents.rag_router import (
     is_business_definition
@@ -38,6 +39,10 @@ app.state.limiter = limiter
 app.add_middleware(
     SlowAPIMiddleware
 )
+
+# Metrics endpoint
+Instrumentator().instrument(app).expose(app)
+
 API_KEY = os.getenv("API_KEY")
 
 class ChatRequest(BaseModel):
