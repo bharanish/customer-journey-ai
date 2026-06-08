@@ -9,3 +9,8 @@ pandas
 python-dotenv
 streamlit
 openai
+langchain-community
+faiss-cpu
+reportlab
+openpyxl
+

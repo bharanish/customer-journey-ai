@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+import os
+from fastapi import FastAPI, Header, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
 
@@ -16,7 +17,7 @@ from agents.rag_agent import (
 )
 
 app = FastAPI()
-
+API_KEY = os.getenv("API_KEY")
 
 class ChatRequest(BaseModel):
     question: str
@@ -31,7 +32,12 @@ def root():
 
 
 @app.post("/chat")
-def chat(request: ChatRequest):
+def chat(request: ChatRequest, x_api_key: str = Header(None)):
+    if x_api_key != API_KEY:
+    	raise HTTPException(
+        	status_code=401,
+       		detail="Unauthorized"
+    	)
 
     # --------------------------------
     # RAG Business Dictionary

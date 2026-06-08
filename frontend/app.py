@@ -117,7 +117,7 @@ if question:
         try:
 
             response = requests.post(
-                "http://localhost:8000/chat",
+                "http://65.1.3.143:8000/chat",
                 json={
                     "question": question,
                     "history": st.session_state.history[-5:]
