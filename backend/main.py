@@ -79,6 +79,14 @@ def chat(request: ChatRequest):
         result = graph.invoke({
             "question": request.question,
             "history": request.history,
+            "question_status": "",
+            "sql": "",
+            "safe_sql": True,
+            "results": "",
+            "results_json": [],
+            "visualization": {},
+            "insight": "",
+            "recommendations": "",
             "steps": []
         })
 
