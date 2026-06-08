@@ -14,11 +14,14 @@ from agents.insight_agent import generate_insight
 from agents.recommendation_agent import generate_recommendation
 from agents.visualization_agent import generate_visualization
 from agents.sql_guard_agent import validate_sql
+from agents.question_validation_agent import validate_question
 from langgraph.graph import StateGraph, END
 
 class AgentState(TypedDict):
     question: str
     history: list
+
+    question_status: str
 
     sql: str
     safe_sql: bool
@@ -140,6 +143,52 @@ def route_after_guard(state):
 
     return "query_executor"
 
+def question_validation_node(state):
+
+    status = validate_question(
+        state["question"]
+    )
+
+    state["question_status"] = status
+
+    state["steps"].append(
+        "Question Validation Agent"
+    )
+
+    if status == "AMBIGUOUS":
+
+        state["insight"] = (
+            "The question is ambiguous."
+        )
+
+        state["recommendations"] = (
+            "Please specify whether you mean "
+            "channel, campaign, device, or revenue."
+        )
+
+    elif status == "UNSUPPORTED":
+
+        state["insight"] = (
+            "This dataset does not contain "
+            "the requested information."
+        )
+
+        state["recommendations"] = (
+            "Try asking about revenue, channel, "
+            "campaign, device, or customer activity."
+        )
+
+    return state
+
+def route_after_validation(state):
+
+    status = state["question_status"].upper()
+
+    if "VALID" in status:
+        return "sql_agent"
+
+    return END
+
 def query_node(state):
 
     if state.get("sql") == "INVALID_COLUMN":
@@ -232,6 +281,7 @@ def visualization_node(state):
 
 builder = StateGraph(AgentState)
 
+builder.add_node("question_validation_agent", question_validation_node)
 builder.add_node("sql_agent", sql_node)
 builder.add_node("sql_guard_agent", sql_guard_node)
 builder.add_node("query_executor", query_node)
@@ -239,7 +289,16 @@ builder.add_node("insight_agent", insight_node)
 builder.add_node("recommendation_agent", recommendation_node)
 builder.add_node("visualization_agent", visualization_node)
 
-builder.set_entry_point("sql_agent")
+builder.set_entry_point("question_validation_agent")
+
+builder.add_conditional_edges(
+    "question_validation_agent",
+    route_after_validation,
+    {
+        "sql_agent": "sql_agent",
+        END: END
+    }
+)
 
 builder.add_edge(
     "sql_agent",
@@ -266,6 +325,7 @@ if __name__ == "__main__":
     result = graph.invoke({
         "question": "Show revenue by channel",
         "history": [],
+        "question_status": "",
         "sql": "",
         "safe_sql": True,
         "results": "",
