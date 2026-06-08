@@ -14,6 +14,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 from fastapi import Request
+from middleware.logging import LoggingMiddleware
 
 from agents.rag_router import (
     is_business_definition
@@ -24,6 +25,11 @@ from agents.rag_agent import (
 )
 
 app = FastAPI()
+
+app.add_middleware(
+    LoggingMiddleware
+)
+
 limiter = Limiter(
     key_func=get_remote_address
 )
