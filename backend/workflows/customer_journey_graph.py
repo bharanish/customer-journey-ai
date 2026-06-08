@@ -72,6 +72,16 @@ def sql_node(state):
 
 def sql_guard_node(state):
 
+    if state["sql"] == "INVALID_COLUMN":
+
+        state["safe_sql"] = False
+
+        state["steps"].append(
+            "SQL Guard Agent"
+        )
+
+        return state
+
     is_safe = validate_sql(
         state["sql"]
     )
@@ -93,8 +103,7 @@ def sql_guard_node(state):
         )
 
         state["recommendations"] = (
-            "Only read-only SELECT queries "
-            "are allowed."
+            "Only read-only SELECT queries are allowed."
         )
 
     return state

@@ -51,34 +51,50 @@ def chat(request: ChatRequest):
         }
 
     # -----------------------------
+    # Force SQL-related questions
+    # through LangGraph
+    # -----------------------------
+
+    q = request.question.lower()
+
+    sql_keywords = [
+        "select",
+        "drop",
+        "delete",
+        "truncate",
+        "update",
+        "insert",
+        "alter",
+        "table",
+        "column",
+        "revenue",
+        "campaign",
+        "channel",
+        "device",
+        "customer"
+    ]
+
+    if any(word in q for word in sql_keywords):
+
+        result = graph.invoke({
+            "question": request.question,
+            "history": request.history,
+            "steps": []
+        })
+
+        result["type"] = "analytics"
+
+        return result
+
+    # -----------------------------
     # General Chat
     # -----------------------------
 
-    question_type = classify_question(
+    answer = general_chat(
         request.question
     )
 
-    if question_type == "GENERAL_QUESTION":
-
-        answer = general_chat(
-            request.question
-        )
-
-        return {
-            "type": "general",
-            "answer": answer
-        }
-
-    # -----------------------------
-    # Analytics Workflow
-    # -----------------------------
-
-    result = graph.invoke({
-        "question": request.question,
-        "history": request.history,
-        "steps": []
-    })
-
-    result["type"] = "analytics"
-
-    return result
+    return {
+        "type": "general",
+        "answer": answer
+    }
