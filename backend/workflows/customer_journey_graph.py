@@ -72,6 +72,28 @@ def sql_node(state):
 
 def sql_guard_node(state):
 
+    if state["sql"] == "UNSAFE_OPERATION":
+
+        state["safe_sql"] = False
+
+        state["results"] = []
+
+        state["results_json"] = []
+
+        state["insight"] = (
+            "Unsafe SQL operation detected."
+        )
+
+        state["recommendations"] = (
+            "Only read-only SELECT queries are allowed."
+        )
+
+        state["steps"].append(
+            "SQL Guard Agent"
+        )
+
+        return state
+
     if state["sql"] == "INVALID_COLUMN":
 
         state["safe_sql"] = False

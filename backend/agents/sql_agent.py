@@ -214,6 +214,9 @@ def clean_sql(sql_text):
     if "INVALID_COLUMN" in cleaned:
         return "INVALID_COLUMN"
 
+    if "UNSAFE_OPERATION" in cleaned:
+        return "UNSAFE_OPERATION"
+
     return cleaned
 
 
