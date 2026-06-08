@@ -33,9 +33,9 @@ def root():
 @app.post("/chat")
 def chat(request: ChatRequest):
 
-    # -----------------------------
+    # --------------------------------
     # RAG Business Dictionary
-    # -----------------------------
+    # --------------------------------
 
     if is_business_definition(
         request.question
@@ -50,43 +50,42 @@ def chat(request: ChatRequest):
             "answer": answer
         }
 
-    # -----------------------------
-    # Force SQL-related questions
-    # through LangGraph
-    # -----------------------------
+    # --------------------------------
+    # Router Agent
+    # --------------------------------
 
-    q = request.question.lower()
+    question_type = classify_question(
+        request.question
+    )
 
-    sql_keywords = [
-        "select",
-        "drop",
-        "delete",
-        "truncate",
-        "update",
-        "insert",
-        "alter",
-        "table",
-        "column",
-        "revenue",
-        "campaign",
-        "channel",
-        "device",
-        "customer"
-    ]
+    print(
+        f"QUESTION TYPE: {question_type}"
+    )
 
-    if any(word in q for word in sql_keywords):
+    # --------------------------------
+    # Analytics Workflow
+    # --------------------------------
+
+    if question_type == "DATA_ANALYSIS":
 
         result = graph.invoke({
+
             "question": request.question,
             "history": request.history,
+
             "question_status": "",
+
             "sql": "",
             "safe_sql": True,
+
             "results": "",
             "results_json": [],
+
             "visualization": {},
+
             "insight": "",
             "recommendations": "",
+
             "steps": []
         })
 
@@ -94,9 +93,9 @@ def chat(request: ChatRequest):
 
         return result
 
-    # -----------------------------
+    # --------------------------------
     # General Chat
-    # -----------------------------
+    # --------------------------------
 
     answer = general_chat(
         request.question
@@ -106,3 +105,14 @@ def chat(request: ChatRequest):
         "type": "general",
         "answer": answer
     }
+
+
+if __name__ == "__main__":
+
+    import uvicorn
+
+    uvicorn.run(
+        app,
+        host="0.0.0.0",
+        port=8000
+    )

@@ -21,7 +21,8 @@ def classify_question(question):
         "show",
         "list",
         "compare",
-        "trend"
+        "trend",
+        "performance"
     ]
 
     if any(word in question for word in analytics_keywords):
