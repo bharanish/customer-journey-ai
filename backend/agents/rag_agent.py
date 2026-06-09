@@ -4,12 +4,13 @@ from langchain_openai import ChatOpenAI
 
 from config import OPENAI_API_KEY
 
+
 embeddings = OpenAIEmbeddings(
     openai_api_key=OPENAI_API_KEY
 )
 
 db = FAISS.load_local(
-    "vector_store/business_glossary",
+    "vector_store/customer_knowledge_base",
     embeddings,
     allow_dangerous_deserialization=True
 )
@@ -18,6 +19,7 @@ llm = ChatOpenAI(
     model="gpt-4o",
     api_key=OPENAI_API_KEY
 )
+
 
 def answer_business_question(question):
 
@@ -30,8 +32,22 @@ def answer_business_question(question):
         [doc.page_content for doc in docs]
     )
 
+    sources = list(
+        set(
+            doc.metadata.get("source", "Unknown")
+            for doc in docs
+        )
+    )
+
     prompt = f"""
-    Answer using ONLY the provided context.
+    You are a business analytics assistant.
+
+    Answer the question using only the provided context.
+
+    If the answer is not present in the context,
+    say:
+
+    "I could not find that information in the knowledge base."
 
     Context:
     {context}
@@ -42,4 +58,7 @@ def answer_business_question(question):
 
     response = llm.invoke(prompt)
 
-    return response.content
+    return {
+        "answer": response.content,
+        "sources": sources
+    }
