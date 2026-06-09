@@ -88,7 +88,8 @@ def chat(
 
         return {
             "type": "rag",
-            "answer": answer
+            "answer": answer,
+            "sources": result["sources"]
         }
 
     # --------------------------------

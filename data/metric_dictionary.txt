@@ -1,0 +1,160 @@
+Metrics Dictionary
+
+Conversion Rate
+
+Definition:
+Conversion Rate is the percentage of users who complete a desired action compared to the total number of users who had the opportunity to perform that action.
+
+Formula:
+Conversion Rate = (Conversions / Total Visitors) × 100
+
+Business Importance:
+Conversion Rate is one of the most important performance indicators in digital marketing and e-commerce. A higher conversion rate typically indicates that marketing campaigns, website experience, and product offerings are effectively meeting customer needs.
+
+Example:
+If 1,000 visitors arrive on a website and 50 complete a purchase, the conversion rate is 5%.
+
+---
+
+Customer Acquisition Cost (CAC)
+
+Definition:
+Customer Acquisition Cost measures the average cost required to acquire a new customer.
+
+Formula:
+CAC = Total Sales and Marketing Cost / Number of New Customers Acquired
+
+Business Importance:
+CAC helps organizations evaluate the efficiency of marketing and sales investments. Businesses should strive to keep CAC lower than Customer Lifetime Value (CLV).
+
+Example:
+If a company spends $10,000 on marketing and acquires 100 customers, CAC equals $100.
+
+---
+
+Customer Lifetime Value (CLV)
+
+Definition:
+Customer Lifetime Value represents the total revenue expected from a customer throughout the entire relationship with the business.
+
+Formula:
+CLV = Average Revenue Per Customer × Average Customer Lifespan
+
+Business Importance:
+CLV helps determine customer profitability and supports investment decisions in acquisition and retention strategies.
+
+---
+
+Average Order Value (AOV)
+
+Definition:
+Average Order Value measures the average revenue generated per customer transaction.
+
+Formula:
+AOV = Total Revenue / Number of Orders
+
+Business Importance:
+Increasing AOV can significantly improve profitability without increasing customer acquisition costs.
+
+---
+
+Retention Rate
+
+Definition:
+Retention Rate measures the percentage of customers who continue to engage with a business over a specified period.
+
+Formula:
+Retention Rate = ((Customers at End of Period - New Customers) / Customers at Start of Period) × 100
+
+Business Importance:
+Retention is often more cost-effective than acquisition and is strongly correlated with profitability.
+
+---
+
+Churn Rate
+
+Definition:
+Churn Rate measures the percentage of customers who stop using a product or service during a specified period.
+
+Formula:
+Churn Rate = Lost Customers / Total Customers at Beginning of Period
+
+Business Importance:
+A high churn rate may indicate customer dissatisfaction, competitive pressure, or poor product-market fit.
+
+---
+
+Net Promoter Score (NPS)
+
+Definition:
+NPS measures customer loyalty and willingness to recommend a company to others.
+
+Formula:
+NPS = % Promoters - % Detractors
+
+Score Categories:
+Promoters: 9-10
+Passives: 7-8
+Detractors: 0-6
+
+Business Importance:
+NPS is commonly used to assess customer satisfaction and predict future growth.
+
+---
+
+Revenue Per User (RPU)
+
+Definition:
+Revenue Per User measures average revenue generated per customer.
+
+Formula:
+RPU = Total Revenue / Total Customers
+
+Business Importance:
+RPU helps evaluate monetization effectiveness and customer value.
+
+---
+
+Return on Investment (ROI)
+
+Definition:
+ROI measures profitability relative to investment cost.
+
+Formula:
+ROI = ((Gain from Investment - Cost of Investment) / Cost of Investment) × 100
+
+Business Importance:
+ROI is used to evaluate marketing campaigns, technology investments, and strategic initiatives.
+
+---
+
+Monthly Active Users (MAU)
+
+Definition:
+MAU represents the number of unique users who interact with a product during a calendar month.
+
+Business Importance:
+MAU is a key growth metric for digital products and subscription businesses.
+
+---
+
+Daily Active Users (DAU)
+
+Definition:
+DAU represents the number of unique users who interact with a product during a single day.
+
+Business Importance:
+DAU measures engagement and product stickiness.
+
+---
+
+DAU/MAU Ratio
+
+Definition:
+DAU/MAU Ratio measures user engagement frequency.
+
+Formula:
+DAU / MAU × 100
+
+Business Importance:
+A higher ratio indicates stronger customer engagement and habitual usage patterns.

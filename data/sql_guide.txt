@@ -1,0 +1,195 @@
+SQL Analytics Guide
+
+Overview
+
+Structured Query Language (SQL) is the primary language used to retrieve, analyze, and manipulate data stored in relational databases.
+
+SQL is commonly used by analysts, data engineers, and business intelligence teams.
+
+---
+
+Basic Query Structure
+
+SELECT
+FROM
+WHERE
+GROUP BY
+HAVING
+ORDER BY
+LIMIT
+
+Example:
+
+SELECT customer_id, revenue
+FROM orders
+WHERE revenue > 100
+ORDER BY revenue DESC;
+
+---
+
+SELECT
+
+Purpose:
+Retrieve specific columns from a table.
+
+Best Practice:
+Avoid SELECT * in production environments.
+
+Preferred:
+
+SELECT customer_id, order_amount
+FROM orders;
+
+---
+
+WHERE
+
+Purpose:
+Filter records before aggregation.
+
+Example:
+
+SELECT *
+FROM customers
+WHERE country = 'India';
+
+---
+
+GROUP BY
+
+Purpose:
+Aggregate data by category.
+
+Example:
+
+SELECT country,
+COUNT(*) AS customer_count
+FROM customers
+GROUP BY country;
+
+---
+
+HAVING
+
+Purpose:
+Filter aggregated results.
+
+Example:
+
+SELECT country,
+COUNT(*) AS customer_count
+FROM customers
+GROUP BY country
+HAVING COUNT(*) > 100;
+
+---
+
+ORDER BY
+
+Purpose:
+Sort query results.
+
+Example:
+
+SELECT *
+FROM orders
+ORDER BY order_date DESC;
+
+---
+
+JOIN Types
+
+Inner Join:
+Returns matching records from both tables.
+
+Left Join:
+Returns all records from the left table and matching records from the right table.
+
+Right Join:
+Returns all records from the right table and matching records from the left table.
+
+Full Join:
+Returns all matching and non-matching records.
+
+---
+
+Aggregation Functions
+
+COUNT()
+SUM()
+AVG()
+MIN()
+MAX()
+
+Example:
+
+SELECT
+AVG(order_amount) AS average_order_value
+FROM orders;
+
+---
+
+Common Business Queries
+
+Top Customers
+
+SELECT customer_id,
+SUM(revenue) AS total_revenue
+FROM orders
+GROUP BY customer_id
+ORDER BY total_revenue DESC;
+
+---
+
+Monthly Revenue
+
+SELECT
+DATE_TRUNC('month', order_date) AS month,
+SUM(revenue) AS revenue
+FROM orders
+GROUP BY month
+ORDER BY month;
+
+---
+
+Customer Retention Analysis
+
+Measure customer activity across multiple periods to determine retention rates and churn trends.
+
+---
+
+SQL Performance Best Practices
+
+1. Avoid SELECT *
+2. Filter early using WHERE clauses.
+3. Create indexes on frequently queried columns.
+4. Avoid unnecessary joins.
+5. Use LIMIT for exploratory analysis.
+6. Analyze query execution plans.
+7. Partition large tables when necessary.
+
+---
+
+Data Quality Best Practices
+
+1. Validate source data.
+2. Handle NULL values explicitly.
+3. Monitor duplicate records.
+4. Apply consistent naming conventions.
+5. Maintain audit trails.
+
+---
+
+SQL for Customer Analytics
+
+Common analyses include:
+
+* Revenue trends
+* Customer segmentation
+* Retention analysis
+* Funnel conversion analysis
+* Product performance
+* Marketing attribution
+* Cohort analysis
+
+These analyses support data-driven business decision making.
